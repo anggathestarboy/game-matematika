@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Monster Match</title>
+    <!-- Impor JetBrains Mono dari Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Terapkan JetBrains Mono ke seluruh teks di body */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace; /* Gunakan JetBrains Mono */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+        }
+
+        #main-container {
+            width: 1400px;
+            height: 1000px;
+            background-image: url('../Background/Menu Utama.png'); /* Default background */
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            padding-top: 100px;
+            transition: background-image 0.5s ease-in-out; /* Smooth transition for background change */
+        }
+
+        .menu-button {
+            background-color: rgba(1, 162, 255, 0.911);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 1.5em;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+            border-color: #fff;
+            border: 3px solid #fff;
+            font-family: 'JetBrains Mono', monospace; /* Gunakan JetBrains Mono */
+        }
+
+        .menu-button:hover {
+            background-color: rgba(255, 255, 255, 0.7);
+            color: black;
+        }
+
+        .menu-button:disabled {
+            background-color: rgba(128, 128, 128, 0.5);
+            cursor: not-allowed;
+        }
+
+        #splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            color: white;
+            font-size: 2em;
+            z-index: 10;
+            font-family: 'JetBrains Mono', monospace; /* Gunakan JetBrains Mono */
+        }
+
+        #game-canvas {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #main-menu {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            bottom: 300px;
+            gap: 20px;
+        }
+
+        #level-menu {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            gap: 20px;
+        }
+
+        #level-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 5 tombol per baris */
+            gap: 20px;
+        }
+
+        #back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px; /* Pindahkan ke pojok kiri atas */
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            display: none; /* Sembunyikan tombol back secara default */
+        }
+
+        #back-button img {
+            width: 180%;
+            height: 150%;
+            border-radius: 10px;
+        }
+
+        #game-screen {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            gap: 20px;
+        }
+
+        #monsters-container {
+            display: flex; /* Mengatur container monster menjadi flexbox */
+            justify-content: center; /* Menengahkan monster secara horizontal */
+            gap: 30px; /* Jarak antar gambar monster */
+        }
+
+        .monster {
+            width: 150px; /* Perbesar ukuran gambar monster */
+            height: 150px; /* Perbesar ukuran gambar monster */
+            cursor: pointer;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .monster:hover {
+            transform: scale(1.1);
+        }
+
+        .selected {
+            border: 2px solid rgb(0, 0, 0);
+        }
+
+        #target-number {
+            font-size: 2.5em; /* Ukuran font lebih besar */
+            font-weight: bold; /* Teks tebal */
+            color: #ffffff; /* Warna teks kuning */
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Efek bayangan teks */
+            background-color: orange;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace; /* Gunakan JetBrains Mono */
+        }
+
+        #lives {
+            font-size: 1.8em; /* Ukuran font lebih kecil dari "Target" */
+            font-weight: bold; /* Teks tebal */
+            color: #ffffff; /* Warna teks merah */
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Efek bayangan teks */
+            background-color: orange;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace; /* Gunakan JetBrains Mono */
+        }
+
+        #question-count {
+            font-size: 1.5em; /* Ukuran font proporsional */
+            color: #ffff;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Efek bayangan teks */
+            background-color: orange;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace; /* Gunakan JetBrains Mono */
+        }
+
+        #submit-button {
+            margin-top: 20px;
+            font-size: 1.2em; /* Ukuran font tombol submit */
+            background-color: #32CD32; /* Warna hijau */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'JetBrains Mono', monospace; /* Gunakan JetBrains Mono */
+        }
+
+        #submit-button:hover {
+            background-color: #228B22; /* Warna hijau lebih gelap saat hover */
+        }
+    </style>
+</head>
+<body>
+    <div id="main-container">
+        <!-- Splash Screen -->
+        <div id="splash-screen">Loading...</div>
+
+        <!-- Main Menu -->
+        <div id="main-menu">
+            <button id="btn-play" class="menu-button">Play</button>
+            <button id="btn-profile" class="menu-button">Profile</button>
+            <button id="btn-quit" class="menu-button">Quit</button>
+            <button id="btn-sound" class="menu-button">Turn On Music</button>
+            <button id="btn-settings" class="menu-button">Settings</button>
+            <audio id="game-music" src="../Asset Lainya/december.mp3" loop></audio>
+        </div>
+
+        <!-- Level Menu -->
+        <div id="level-menu">
+            <div id="level-buttons">
+                <!-- Tombol level 1-10 -->
+                <button id="btn-level1" class="menu-button">Level 1</button>
+                <button id="btn-level2" class="menu-button" disabled>Level 2</button>
+                <button id="btn-level3" class="menu-button" disabled>Level 3</button>
+                <button id="btn-level4" class="menu-button" disabled>Level 4</button>
+                <button id="btn-level5" class="menu-button" disabled>Level 5</button>
+                <button id="btn-level6" class="menu-button" disabled>Level 6</button>
+                <button id="btn-level7" class="menu-button" disabled>Level 7</button>
+                <button id="btn-level8" class="menu-button" disabled>Level 8</button>
+                <button id="btn-level9" class="menu-button" disabled>Level 9</button>
+                <button id="btn-level10" class="menu-button" disabled>Level 10</button>
+            </div>
+        </div>
+
+        <!-- Tombol Back -->
+        <button id="back-button">
+            <img src="../Asset Lainya/Asset Back.png" alt="Back"> <!-- Ganti dengan path gambar back icon -->
+        </button>
+
+        <!-- Game Screen -->
+        <div id="game-screen">
+            <div id="target-number">Target: </div>
+            <div id="lives">Lives: 3</div>
+            <div id="question-count">Question: 1/10</div>
+            <div id="monsters-container"></div>
+            <button id="submit-button" class="menu-button">Submit</button>
+        </div>
+
+        <!-- Game Canvas -->
+        <canvas id="game-canvas"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const splashScreen = document.getElementById('splash-screen');
+            const mainMenu = document.getElementById('main-menu');
+            const levelMenu = document.getElementById('level-menu');
+            const gameScreen = document.getElementById('game-screen');
+            const gameCanvas = document.getElementById('game-canvas');
+            const btnPlay = document.getElementById('btn-play');
+            const btnQuit = document.getElementById('btn-quit');
+            const btnProfile = document.getElementById('btn-profile');
+            const btnSound = document.getElementById('btn-sound');
+            const btnSettings = document.getElementById('btn-settings');
+            const btnLevel1 = document.getElementById('btn-level1');
+            const btnLevel2 = document.getElementById('btn-level2');
+            const btnLevel3 = document.getElementById('btn-level3');
+            const btnLevel4 = document.getElementById('btn-level4');
+            const btnLevel5 = document.getElementById('btn-level5');
+            const btnLevel6 = document.getElementById('btn-level6');
+            const btnLevel7 = document.getElementById('btn-level7');
+            const btnLevel8 = document.getElementById('btn-level8');
+            const btnLevel9 = document.getElementById('btn-level9');
+            const btnLevel10 = document.getElementById('btn-level10');
+            const backButton = document.getElementById('back-button');
+            const gameMusic = document.getElementById('game-music');
+            const monstersContainer = document.getElementById('monsters-container');
+            const targetNumberDisplay = document.getElementById('target-number');
+            const submitButton = document.getElementById('submit-button');
+            const livesDisplay = document.getElementById('lives');
+            const questionCountDisplay = document.getElementById('question-count');
+            const mainContainer = document.getElementById('main-container');
+
+            let currentLevel = 1;
+            let levelsUnlocked = [true, false, false, false, false, false, false, false, false, false]; // Level 1 unlocked by default
+            let targetNumber = 0;
+            let selectedMonsters = [];
+            let monsterValues = [];
+            let lives = 3; // Jumlah nyawa
+            let questionCount = 1; // Jumlah soal yang telah dikerjakan
+            let totalQuestions = 10; // Total soal per level
+
+            // Simulate loading time for splash screen
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+                mainMenu.style.display = 'flex';
+            }, 2000);
+
+            // Handle Play Button
+            btnPlay.addEventListener('click', () => {
+                mainMenu.style.display = 'none';
+                levelMenu.style.display = 'flex';
+                backButton.style.display = 'block'; // Tampilkan tombol back
+                updateLevelButtons();
+                // Change background when level menu is shown
+                mainContainer.style.backgroundImage = "url('../Background/map.jpg')";
+            });
+
+            // Handle Back Button
+            backButton.addEventListener('click', () => {
+                levelMenu.style.display = 'none';
+                mainMenu.style.display = 'flex';
+                backButton.style.display = 'none'; // Sembunyikan tombol back
+                // Change background back to main menu background
+                mainContainer.style.backgroundImage = "url('../Background/Menu Utama.png')";
+            });
+
+            // Handle Level Buttons
+            btnLevel1.addEventListener('click', () => startLevel(1));
+            btnLevel2.addEventListener('click', () => startLevel(2));
+            btnLevel3.addEventListener('click', () => startLevel(3));
+            btnLevel4.addEventListener('click', () => startLevel(4));
+            btnLevel5.addEventListener('click', () => startLevel(5));
+            btnLevel6.addEventListener('click', () => startLevel(6));
+            btnLevel7.addEventListener('click', () => startLevel(7));
+            btnLevel8.addEventListener('click', () => startLevel(8));
+            btnLevel9.addEventListener('click', () => startLevel(9));
+            btnLevel10.addEventListener('click', () => startLevel(10));
+
+            // Handle Quit Button
+            btnQuit.addEventListener('click', () => {
+                if (confirm('Are you sure you want to quit the game?')) {
+                    window.close();
+                }
+            });
+
+            // Handle Profile Button
+            btnProfile.addEventListener('click', () => {
+                const username = prompt('Enter your username:');
+                if (username) {
+                    alert(`Username set to: ${username}`);
+                }
+            });
+
+            // Handle Sound Button
+            let soundEnabled = false; // Kondisi awal musik mati
+            gameMusic.pause(); // Pastikan musik mati saat pertama kali dimuat
+            btnSound.textContent = 'Turn On Music'; // Teks awal tombol
+
+            btnSound.addEventListener('click', () => {
+                soundEnabled = !soundEnabled; // Toggle status musik
+                if (soundEnabled) {
+                    gameMusic.play(); // Nyalakan musik
+                    btnSound.textContent = 'Turn Off Music'; // Update teks tombol
+                } else {
+                    gameMusic.pause(); // Matikan musik
+                    btnSound.textContent = 'Turn On Music'; // Update teks tombol
+                }
+            });
+
+            // Handle Settings Button
+            btnSettings.addEventListener('click', () => {
+                const volume = prompt('Set volume level (0 to 100):');
+                if (volume !== null) {
+                    const volumeLevel = Math.min(Math.max(parseInt(volume, 10), 0), 100) / 100;
+                    gameMusic.volume = volumeLevel;
+                    alert(`Volume set to: ${Math.round(volumeLevel * 100)}`);
+                }
+            });
+
+            // Function to start a level
+            function startLevel(level) {
+                currentLevel = level;
+                levelMenu.style.display = 'none';
+                gameScreen.style.display = 'flex';
+                backButton.style.display = 'none'; // Sembunyikan tombol back saat permainan dimulai
+                resetGameState(); // Reset game state
+                initializeGame();
+                // Change background when game starts
+                mainContainer.style.backgroundImage = "url('../Background/map.jpg')";
+            }
+
+            // Function to reset game state
+            function resetGameState() {
+                lives = 3;
+                questionCount = 1;
+                livesDisplay.textContent = `Lives: ${lives}`;
+                questionCountDisplay.textContent = `Question: ${questionCount}/${totalQuestions}`;
+            }
+
+            // Function to initialize the game
+            function initializeGame() {
+                // Reset game state
+                selectedMonsters = [];
+                monsterValues = [];
+                monstersContainer.innerHTML = '';
+
+                // Generate target number (1-5)
+                targetNumber = Math.floor(Math.random() * 5) + 1;
+                targetNumberDisplay.textContent = `Target: ${targetNumber}`;
+
+                // Generate monsters with random values (1-3)
+                for (let i = 0; i < 4; i++) {
+                    const value = Math.floor(Math.random() * 3) + 1;
+                    monsterValues.push(value);
+                    const monster = document.createElement('img');
+                    monster.src = `../Monster/monster${value}.png`; // Adjust path to your monster images
+                    monster.classList.add('monster');
+                    monster.dataset.value = value;
+                    monster.addEventListener('click', () => selectMonster(monster));
+                    monstersContainer.appendChild(monster);
+                }
+
+                // Handle submit button
+                submitButton.addEventListener('click', checkAnswer);
+            }
+
+            // Function to select/deselect a monster
+            function selectMonster(monster) {
+                if (monster.classList.contains('selected')) {
+                    monster.classList.remove('selected');
+                    selectedMonsters = selectedMonsters.filter(m => m !== monster);
+                } else {
+                    monster.classList.add('selected');
+                    selectedMonsters.push(monster);
+                }
+            }
+
+            // Function to check the answer
+            function checkAnswer() {
+                const total = selectedMonsters.reduce((sum, monster) => sum + parseInt(monster.dataset.value), 0);
+                if (total === targetNumber) {
+                    alert('Correct!');
+                    questionCount++;
+                    if (questionCount > totalQuestions) {
+                        alert('Level completed!');
+                        if (currentLevel < 10) {
+                            levelsUnlocked[currentLevel] = true; // Unlock next level
+                            updateLevelButtons();
+                        }
+                        gameScreen.style.display = 'none';
+                        levelMenu.style.display = 'flex';
+                        backButton.style.display = 'block'; // Tampilkan tombol back setelah level selesai
+                        // Change background back to level menu background
+                        mainContainer.style.backgroundImage = "url('../Background/map.jpg')";
+                    } else {
+                        questionCountDisplay.textContent = `Question: ${questionCount}/${totalQuestions}`;
+                        initializeGame(); // Load next question
+                    }
+                } else {
+                    lives--;
+                    livesDisplay.textContent = `Lives: ${lives}`;
+                    if (lives === 0) {
+                        alert('You are eliminated!');
+                        gameScreen.style.display = 'none';
+                        levelMenu.style.display = 'flex';
+                        backButton.style.display = 'block'; // Tampilkan tombol back setelah eliminasi
+                        // Change background back to level menu background
+                        mainContainer.style.backgroundImage = "url('../Background/map.jpg')";
+                    } else {
+                        alert('Incorrect! Try again.');
+                        initializeGame(); // Reload the same question
+                    }
+                }
+            }
+
+            // Function to update level buttons based on unlocked levels
+            function updateLevelButtons() {
+                const levelButtons = [
+                    btnLevel1, btnLevel2, btnLevel3, btnLevel4, btnLevel5,
+                    btnLevel6, btnLevel7, btnLevel8, btnLevel9, btnLevel10
+                ];
+                levelButtons.forEach((button, index) => {
+                    button.disabled = !levelsUnlocked[index];
+                });
+            }
+        });
+    </script>
+</body>
+</html>
